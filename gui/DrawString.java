@@ -1,7 +1,5 @@
 package gui;
 
-import gui.util.*;
-
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -10,7 +8,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
+
+import gui.util.Direction;
+import gui.util.Justify;
+import gui.util.Pair;
 
 public class DrawString {
     public static final int TAB_SIZE = 8;
@@ -61,9 +62,23 @@ public class DrawString {
      * @return Whether or not the text was drawn, as determined by comp.isVisible()
      */
     public Rectangle positionText(Direction dir, Justify j, String text, Rectangle ref) {
+        // Text may need formatting
+        ArrayList<Pair<String, Point>> lines = formattedLines(text, 0, 0);
+        // Since Positioner.positioned needs the width and height of the target rectangle, we need to find the max width
+        int maxWidth = width(lines.get(0).getKey());
         last = Positioner.positioned(dir, j, ref, width(text), height, 0);
+        for (Pair<String, Point> line : lines) {
+            int width = width(line.getKey());
+            if (width > maxWidth) {
+                maxWidth = width;
+            }
+        }
+        // height = final line y - first line y + additional line height
+        int height_net = lines.get(lines.size()-1).getValue().y - lines.get(0).getValue().y + height;
 
-        g.drawString(text, last.x, last.y);
+        Rectangle pos = Positioner.positioned(dir, j, ref, maxWidth, height_net, 0);
+
+        controlledDraw(lines, pos.x, pos.y);
 
         return last;
     }
@@ -84,7 +99,6 @@ public class DrawString {
     public Optional<Rectangle> topText(String text, JComponent comp) { return positionText(Direction.UP, Justify.CENTER, text, comp); }
     public Optional<Rectangle> rightText(String text, JComponent comp) { return positionText(Direction.RIGHT, Justify.CENTER, text, comp); }
     public Optional<Rectangle> bottomText(String text, JComponent comp) { return positionText(Direction.DOWN, Justify.CENTER, text, comp); }
-    public Optional<Rectangle> bottomText(String text, JScrollPane comp) { return positionText(Direction.DOWN, Justify.START, text, comp); }
     public Rectangle bottomText(String text, Rectangle comp) { return positionText(Direction.DOWN, Justify.START, text, comp); }
 
     public Point drawLines(String[] lines, Point start) {
@@ -210,19 +224,7 @@ public class DrawString {
 
         return res;
     }
-
-    public Point controlledDraw(Pair<String, Point>[] strings) {
-        // Just print each line at it's starting point
-        Point maxY = strings[0].getValue();
-        for (Pair<String, Point> pair : strings) {
-            if (pair.getValue().y > maxY.y) {
-                maxY = pair.getValue();
-            }
-            g.drawString(pair.getKey(), pair.getValue().x, pair.getValue().y);
-        }
-        return maxY;
-    }
-    public Point controlledDraw(ArrayList<Pair<String, Point>> strings) {
+    public Point controlledDraw(ArrayList<Pair<String, Point>> strings, int offsetX, int offsetY) {
         Point maxY = strings.get(0).getValue();
         for (Pair<String, Point> pair : strings) {
             // ! LEAVE THIS
@@ -231,8 +233,9 @@ public class DrawString {
             if (pair.getValue().y > maxY.y) {
                 maxY = pair.getValue();
             }
-            g.drawString(pair.getKey(), pair.getValue().x, pair.getValue().y);
+            g.drawString(pair.getKey(), pair.getValue().x + offsetX, pair.getValue().y + offsetY);
         }
         return maxY;
     }
+    public Point controlledDraw(ArrayList<Pair<String, Point>> strings) { return controlledDraw(strings, 0, 0); }
 }
