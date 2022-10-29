@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 import gui.DrawString;
+import gui.Positioner;
 import gui.util.Direction;
 import gui.util.Justify;
 
@@ -26,7 +27,7 @@ public class Runner extends JPanel {
     public Runner() {
         dim = new Dimension(800, 600);
         testArea = new JTextArea();
-        testArea.setBounds(350, 20, 100, 20);
+        testArea.setBounds(Positioner.centerTop(dim));
         add(testArea);
         setLayout(null);
     }
@@ -40,7 +41,9 @@ public class Runner extends JPanel {
 
         DrawString ds = new DrawString(g);
 
-        ds.positionText(Direction.DOWN, Justify.START, "This is some text\n"
+        // NOTE: Justify.END does NOT right align the text, it simply sets the right-most point of the text to be flush
+        //      with the right-most point of the component
+        ds.positionText(Direction.DOWN, Justify.END, "This is some text\n"
         + "with newlines\nand\ttabs\n"
         + "even\bbackspace\n"
         + "of course\\backslash and\'single quote and \"double quote\n"

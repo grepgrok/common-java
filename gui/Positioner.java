@@ -40,11 +40,7 @@ public class Positioner {
                         break;
 
                     case CENTER:
-                        System.out.println("ref.x: " + ref.x);
-                        System.out.println("ref.width: " + ref.width);
-                        System.out.println("dim.width: " + dim.width);
                         x = ref.x + ref.width / 2 - dim.width / 2;
-                        System.out.println(x);
                         break;
 
                     case END:
@@ -99,6 +95,43 @@ public class Positioner {
     public static Rectangle right(Component c) { return positioned(Direction.RIGHT, Justify.START, c.getBounds(), WIDTH, HEIGHT, SPACER); }
     public static Rectangle right(Component c, int w, int h, int s) { return positioned(Direction.RIGHT, Justify.START, c.getBounds(), w, h, s); }
 
+    // Center horizontally or vertically along a side of the 
+    public static Rectangle center(Direction dir, Rectangle ref, Dimension dim, int spacer) {
+        int x = ref.x;
+        int y = ref.y;
+        switch(dir) {
+            case UP:
+                x += ref.width / 2 - dim.width / 2;
+                y += spacer;
+                break;
+            case RIGHT:
+                x += ref.width - dim.width - spacer;
+                y += ref.height / 2 - dim.height / 2;
+                break;
+            case DOWN:
+                x += ref.width / 2 - dim.width / 2;
+                y += ref.height - dim.height - spacer;
+                break;
+            case LEFT:
+                x += spacer;
+                y += ref.height / 2 - dim.height / 2;
+                break;
+            default:
+                break;
+        }
+        return new Rectangle(x, y, dim.width, dim.height);
+    }
+
+    public static Rectangle centerLeft(Rectangle ref, Dimension dim) { return center(Direction.LEFT, ref, dim, SPACER); }
+    public static Rectangle centerLeft(Dimension dim) { return center(Direction.LEFT, new Rectangle(0, 0, dim.width, dim.height), new Dimension(WIDTH, HEIGHT), SPACER); }
+    public static Rectangle centerRight(Rectangle ref, Dimension dim) { return center(Direction.RIGHT, ref, dim, SPACER); }
+    public static Rectangle centerRight(Dimension dim) { return center(Direction.RIGHT, new Rectangle(0, 0, dim.width, dim.height), new Dimension(WIDTH, HEIGHT), SPACER); }
+    public static Rectangle centerTop(Rectangle ref, Dimension dim) { return center(Direction.UP, ref, dim, SPACER); }
+    public static Rectangle centerTop(Dimension dim) { return center(Direction.UP, new Rectangle(0, 0, dim.width, dim.height), new Dimension(WIDTH, HEIGHT), SPACER); }
+    public static Rectangle centerBottom(Rectangle ref, Dimension dim) { return center(Direction.DOWN, ref, dim, SPACER); }
+    public static Rectangle centerBottom(Dimension dim) { return center(Direction.DOWN, new Rectangle(0, 0, dim.width, dim.height), new Dimension(WIDTH, HEIGHT), SPACER); }
+
+    // Center horizontally and vertically
     public static Rectangle center(Rectangle rect, Dimension dim) {
         return new Rectangle(
             rect.x + rect.width / 2 - dim.width / 2,
