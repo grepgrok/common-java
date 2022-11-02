@@ -99,6 +99,9 @@ public class DrawString {
     public Optional<Rectangle> topText(String text, JComponent comp) { return positionText(Direction.UP, Justify.CENTER, text, comp); }
     public Optional<Rectangle> rightText(String text, JComponent comp) { return positionText(Direction.RIGHT, Justify.CENTER, text, comp); }
     public Optional<Rectangle> bottomText(String text, JComponent comp) { return positionText(Direction.DOWN, Justify.CENTER, text, comp); }
+    public Rectangle leftText(String text, Rectangle comp) { return positionText(Direction.LEFT, Justify.START, text, comp); }
+    public Rectangle topText(String text, Rectangle comp) { return positionText(Direction.UP, Justify.START, text, comp); }
+    public Rectangle rightText(String text, Rectangle comp) { return positionText(Direction.RIGHT, Justify.START, text, comp); }
     public Rectangle bottomText(String text, Rectangle comp) { return positionText(Direction.DOWN, Justify.START, text, comp); }
 
     public Point drawLines(String[] lines, Point start) {
@@ -113,7 +116,7 @@ public class DrawString {
     public Point drawLines(ArrayList<String> lines, int x, int y) { return drawLines(lines.toArray(new String[0]), x, y); }
     public Point drawLines(ArrayList<String> lines, Point p) { return drawLines(lines, p); }
 
-    public Point drawFormattedLines(String text, int x, int y) {
+    public Rectangle drawFormattedLines(String text, int x, int y) {
         return controlledDraw(formattedLines(text, x, y));
     }
 
@@ -224,18 +227,31 @@ public class DrawString {
 
         return res;
     }
-    public Point controlledDraw(ArrayList<Pair<String, Point>> strings, int offsetX, int offsetY) {
-        Point maxY = strings.get(0).getValue();
+    public Rectangle controlledDraw(ArrayList<Pair<String, Point>> strings, int offsetX, int offsetY) {
+        Pair<String, Point> first = strings.get(0);
+        Rectangle container = new Rectangle(first.getValue().x, first.getValue().y, width(first.getKey()), height);
         for (Pair<String, Point> pair : strings) {
             // ! LEAVE THIS
             // System.out.println("Pair:");
             // System.out.println(pair.getKey() + " <:> " + pair.getValue());
-            if (pair.getValue().y > maxY.y) {
-                maxY = pair.getValue();
+            Point pos = pair.getValue();
+            if (pos.y + height > container.y + container.height) {
+                container.setSize(container.width, pos.y + height - container.y);
+            }
+            if (pos.y < container.y) {
+                container.setLocation(container.x, pos.y);
+            }
+            if (pos.x < container.x) {
+                container.setLocation(pos.x, container.y);
+            }
+            int testWidth = pos.x + width(pair.getKey());
+            if (testWidth > container.x + container.width) {
+                container.setSize(testWidth, container.height);
             }
             g.drawString(pair.getKey(), pair.getValue().x + offsetX, pair.getValue().y + offsetY);
         }
-        return maxY;
+        last = container;
+        return container;
     }
-    public Point controlledDraw(ArrayList<Pair<String, Point>> strings) { return controlledDraw(strings, 0, 0); }
+    public Rectangle controlledDraw(ArrayList<Pair<String, Point>> strings) { return controlledDraw(strings, 0, 0); }
 }

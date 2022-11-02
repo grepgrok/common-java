@@ -1,5 +1,3 @@
-package util;
-
 public class DLNode<E> {
     private E data;
     private DLNode<E> next;
@@ -33,7 +31,19 @@ public class DLNode<E> {
         this.prev = prev;
     }
 
+    public String toString() {
+        String res = get().toString();
+        if (prev != null) {
+            res = prev.get() + " <--> " + res;
+        }
+        if (next != null) {
+            res += " <--> " + next.get();
+        }
+        return res;
+    }
+
     public E disconnect() {
+        System.out.println(this);
         if (next != null) {
             next.setPrev(prev);
         }

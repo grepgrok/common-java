@@ -1,5 +1,3 @@
-package util;
-
 import java.util.Iterator;
 
 public class DLList<E> implements Iterable<E> {
@@ -64,17 +62,20 @@ public class DLList<E> implements Iterable<E> {
             if (current.get().equals(data)) {
                 return current;
             }
+            current = current.next();
         }
         return null;
     }
 
-    public void remove(E data) {
+    public boolean remove(E data) {
         DLNode<E> target = getNode(data);
         if (target == null) {
-            return;
+            return false;
         }
-        target.disconnect();
+
+        remove(target);
         size--;
+        return true;
     }
 
     public E remove(int index) {
@@ -83,7 +84,7 @@ public class DLList<E> implements Iterable<E> {
             return null;
         }
         size--;
-        return target.disconnect();
+        return remove(target);
     }
 
     public E pop() {
@@ -127,15 +128,23 @@ public class DLList<E> implements Iterable<E> {
 
     public Iterator<E> iterator() {
         return new Iterator<E>() {
-            private DLNode<E> last;
+            private DLNode<E> currentNode = head;
 
             public boolean hasNext() {
-                return last != tail;
+                return currentNode != null;
             }
 
             public E next() {
-                E res = last.get();
-                last = last.next();
+                // System.out.println();
+                // System.out.println(head);
+                // System.out.println(currentNode);
+                // System.out.println(currentNode.next());
+                // System.out.println(tail);
+                // System.out.println();
+                
+                E res = currentNode.get();
+                currentNode = currentNode.next();
+
                 return res;
             }
         };
@@ -143,5 +152,14 @@ public class DLList<E> implements Iterable<E> {
 
     public int size() {
         return size;
+    }
+
+    private E remove(DLNode<E> node) {
+        if (node == head) {
+            head = node.next();
+        } else if (node == tail) {
+            tail = node.prev();
+        }
+        return node.disconnect();
     }
 }
