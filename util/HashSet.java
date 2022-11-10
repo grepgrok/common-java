@@ -1,13 +1,13 @@
 import java.util.Iterator;
-import java.util.Optional;
+// import java.util.Optional;
 
 public class HashSet<E> implements Iterable<E> {
     public static final int DEFAULT_CAPACITY = 100;
-    private Object[] hashTable;
+    private Object[] table;
     private int size;
 
     public HashSet(int capacity) {
-        hashTable = new Object[capacity];
+        table = new Object[capacity];
         size = 0;
     }
 
@@ -15,45 +15,17 @@ public class HashSet<E> implements Iterable<E> {
         this(DEFAULT_CAPACITY);
     }
 
-    /**
-     * Adds value to the set
-     * 
-     * @param value     The value to add
-     * @param replace   Whether or not to replace existing values
-     * @return If replace is true, then original value (may be null); else, the given value if it was added and null otherwise
-     */
+    public int size() {
+        return size;
+    }
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
     @SuppressWarnings("unchecked")
-    public Optional<E> add(E value, boolean replace) {
-        Optional<E> old = Optional.ofNullable(null);
-        int index = indexOf(value);
-
-        if (replace) {
-            if (!contains(value)) {
-                size++;
-            }
-        
-            old = Optional.ofNullable((E) hashTable[index]);
-            hashTable[index] = value;
-
-        } else {
-            if (!contains(value)) {
-                hashTable[index] = value;
-                size++;
-                // technically current but otherwise there is no way to tell if added
-                // successfully
-                old = Optional.of((E) hashTable[index]);
-            }
-        }
-        return old;
-    }
-
-    public boolean add(E add) {
-        return add(add, false).isPresent();
-    }
-
-    public void clear() {
-        hashTable = new Object[hashTable.length];
-        size = 0;
+    public E get(E e) {
+        return (E) table[indexOf(e)];
     }
 
     /**
@@ -64,63 +36,80 @@ public class HashSet<E> implements Iterable<E> {
      *         (something is already there but it isn't the same as value), then
      *         contains will return false
      */
-    @SuppressWarnings("unchecked")
-    public boolean contains(E value) {
-        E against = (E) hashTable[indexOf(value)];
-        if (against == null) {
+    public boolean contains(Object data) {
+        int index = indexOf(data);
+        if (table[index] == null) {
             return false;
         }
-        // There is a chance that we have a hashCode collision, in which case, value is not in the set
-        return against.equals(value);
+        return table[index].equals(data);
     }
 
-    @SuppressWarnings("unchecked")
-    public E get(E e) {
-        return (E) hashTable[indexOf(e)];
+    public boolean add(E data) {
+        if (contains(data)) {
+            return false;
+        }
+        table[indexOf(data)] = data;
+        size++;
+        return true;
     }
 
-    public boolean remove(E remove) {
-        if (contains(remove)) {
-            hashTable[indexOf(remove)] = null;
+    public boolean remove(Object o) {
+        if (contains(o)) {
+            table[indexOf(o)] = null;
             size--;
             return true;
         }
         return false;
     }
 
-    public int size() {
-        return size;
+    public void clear() {
+        table = new Object[table.length];
+        size = 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    public DLList<E> toDLList() {
+        DLList<E> list = new DLList<>();
+        for (Object o : table) {
+            if (o != null) {
+                list.add((E) o);
+            }
+        }
+        return list;
+    }
+
+    public String toString() {
+        String res = "[";
+        for (E item : this) {
+            res += item + ", ";
+        }
+        return res.substring(0, res.length() - 2) + "]";
     }
 
     public Iterator<E> iterator() {
         return new Iterator<E>() {
-            // We can't just go step by step, we want to loop past null's so we keep track of the lastIndex
-            // Count lets us know when there is nothing left
-            private int count = 0;
-            private int lastIndex = 0;
+            private int initial = -1;
+            private int times = 0;
 
-            public boolean hasNext()  {
-                return count != size;
+            public boolean hasNext() {
+                return times != size;
             }
 
             @SuppressWarnings("unchecked")
             public E next() {
-                count++;
-                E res = null;
-                // Loop from last value
-                for (int i = lastIndex + 1; i < hashTable.length; i++) {
-                    if (hashTable[i] != null) {
-                        res = (E) hashTable[i];
-                        lastIndex = i;
-                        break;
+                for (int i = initial + 1; i < table.length; i++) {
+                    if (table[i] != null) {
+                        initial = i;
+                        times++;
+                        return (E) table[i];
                     }
                 }
-                return res;
+                return null;
             }
         };
     }
 
-    private int indexOf(E item) {
-        return item.hashCode() % hashTable.length;
+    private int indexOf(Object item) {
+        return item.hashCode() % table.length;
     }
 }

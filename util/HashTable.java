@@ -31,29 +31,32 @@ public class HashTable<K,V> {
     @SuppressWarnings("unchecked")
     public HashTable(int capacity) {
         table = new DLList[capacity];
-        keySet = new HashSet<>();
+        keySet = new HashSet<>(capacity);
     }
 
     public HashTable() {
         this(DEFAULT_CAPACITY);
     }
 
-    public boolean put(K key, V value) {
+    public DLList<V> get(K key) {
+        return table[indexOf(key)];
+    }
+
+    public void put(K key, V value) {
         int index = indexOf(key);
 
         if (table[index] == null) {
             table[index] = new DLList<>();
+            keySet.add(key);
         }
-        table[index].add(value);
 
-        return keySet.add(key);
+        table[index].add(value);
     }
 
     public void remove(K key, V value) {
         if (!keySet.contains(key)) { return; }
         int index = indexOf(key);
-        System.out.println(value);
-        System.out.println(table[index].remove(value));
+        table[index].remove(value);
 
         if (table[index].size() == 0) {
             table[index] = null;
@@ -74,15 +77,19 @@ public class HashTable<K,V> {
 
     public String toString() {
         String res = "";
-        for (K key : keySet) {
-            int bucketNum = indexOf(key);
-            res += bucketNum + " - " + key.toString() + " - ";
-            for (V value : table[bucketNum]) {
-                res += value.toString() + ", ";
-            }
-            res = res.substring(0, res.length() - 2) + "\n";
+        if (keySet.isEmpty()) {
+            return "Empty Table";
         }
-        return res;
+
+        for (K key : keySet) {
+
+            int bucketNum = indexOf(key);
+
+            // Add the bucket number, key, and dllist
+            res += bucketNum + " - " + key.toString() + " - " + table[bucketNum] + "\n";
+        }
+
+        return res.substring(0, res.length() - 1);
     }
 
     private int indexOf(K key) {

@@ -7,12 +7,14 @@ import java.awt.Rectangle;
 import gui.util.Direction;
 import gui.util.Justify;
 import gui.util.Positional;
+import gui.util.Corner;
 
 public class Positioner {
     public static final int WIDTH = 100;
     public static final int HEIGHT = 30;
     public static final int SPACER = 10;
 
+    // * Position relative to things
     public static Rectangle positioned(Positional p, Rectangle ref, Dimension dim, int spacer) {
         int x = 0;
         int y = 0;
@@ -95,6 +97,7 @@ public class Positioner {
     public static Rectangle right(Component c) { return positioned(Direction.RIGHT, Justify.START, c.getBounds(), WIDTH, HEIGHT, SPACER); }
     public static Rectangle right(Component c, int w, int h, int s) { return positioned(Direction.RIGHT, Justify.START, c.getBounds(), w, h, s); }
 
+    // * Center in a reference
     // Center horizontally or vertically along a side of the 
     public static Rectangle center(Direction dir, Rectangle ref, Dimension dim, int spacer) {
         int x = ref.x;
@@ -132,13 +135,54 @@ public class Positioner {
     public static Rectangle centerBottom(Dimension dim) { return center(Direction.DOWN, new Rectangle(0, 0, dim.width, dim.height), new Dimension(WIDTH, HEIGHT), SPACER); }
 
     // Center horizontally and vertically
-    public static Rectangle center(Rectangle rect, Dimension dim) {
+    public static Rectangle center(Rectangle ref, Dimension dim) {
         return new Rectangle(
-            rect.x + rect.width / 2 - dim.width / 2,
-            rect.y + rect.height / 2 - dim.height / 2,
+            ref.x + ref.width / 2 - dim.width / 2,
+            ref.y + ref.height / 2 - dim.height / 2,
             dim.width, dim.height
         );
     }
-    public static Rectangle center(Rectangle rect, int width, int height) { return center(rect, new Dimension(width, height)); }
+    public static Rectangle center(Rectangle ref, int width, int height) { return center(ref, new Dimension(width, height)); }
     public static Rectangle center(Dimension d) { return center(new Rectangle(0, 0, d.width, d.height), WIDTH, HEIGHT); }
+
+    // * Place in corners of a reference
+    public static Rectangle corner(Dimension dim, Rectangle ref, Corner corner, int spacerX, int spacerY) {
+        // Already covering top left
+        int x = ref.x + spacerX;
+        int y = ref.y + spacerY;
+
+        switch (corner) {
+            case TOP_RIGHT:
+                x = ref.x + ref.width - dim.width - spacerX;
+                break;
+            case BOTTOM_LEFT:
+                y = ref.y + ref.height - dim.height - spacerY;
+                break;
+            case BOTTOM_RIGHT:
+                x = ref.x + ref.width - dim.width - spacerX;
+                y = ref.y + ref.height - dim.height - spacerY;
+                break;
+            default:
+                break;
+        }
+
+        return new Rectangle(x, y, dim.width, dim.height);
+    }
+
+    public static Rectangle corner(Dimension dim, Rectangle ref, Corner cor, int spacer) {
+        return corner(dim, ref, cor, spacer, spacer);
+    }
+
+    public static Rectangle topLeft(int width, int height, Rectangle ref) {
+        return corner(new Dimension(width, height), ref, Corner.TOP_LEFT, SPACER);
+    }
+    public static Rectangle topRight(int width, int height, Rectangle ref) {
+        return corner(new Dimension(width, height), ref, Corner.TOP_RIGHT, SPACER);
+    }
+    public static Rectangle bottomLeft(int width, int height, Rectangle ref) {
+        return corner(new Dimension(width, height), ref, Corner.BOTTOM_LEFT, SPACER);
+    }
+    public static Rectangle bottomRight(int width, int height, Rectangle ref) {
+        return corner(new Dimension(width, height), ref, Corner.BOTTOM_RIGHT, SPACER);
+    }
 }
